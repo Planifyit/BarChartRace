@@ -131,7 +131,9 @@ script.addEventListener('error', () => {
         this._paused = false;
             this._refresh();
     }
-
+//transformDataForBarChartRace(data) {
+// _handleGroupClick(d) 
+    
    _onResize() {
     console.log("Resizing Chart");
     this._maybeRenderChart();
@@ -160,7 +162,7 @@ if (dataBinding && dataBinding.data) {
         const transformedData = this.transformDataForBarChartRace(dataBinding.data);
           this.currentData = transformedData; // Store the transformed data for rendering
         this._props.metadata = dataBinding.metadata;
-        console.log("Matrix Data for Rendering:", matrixData);
+        console.log("Transformed Data for Rendering:", transformedData);
 
             // Check for this._ready and call _maybeRenderChart if true
  if (this._ready) {
