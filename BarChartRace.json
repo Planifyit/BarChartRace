@@ -1,1 +1,66 @@
 
+{
+  "name": "BarChartRace",
+  "description": "Bar Chart Race Widget",
+  "newInstancePrefix": "BarChartRace",
+  "eula": "",
+  "license": "",
+  "id": "BarChartRace",
+  "version": "1.0.0",
+  "supportsLinkedAnalysisFilterOnSelection": false,
+  "icon":"https://planifyit.github.io/Pie_chart/PlanifyIT_Logo2.png",
+  "vendor": "Planifyit",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "bar-chart-race",
+      "url": "https://planifyit.github.io/BarChartRace/BarChartRaceWidget.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "width": {
+      "type": "integer",
+      "default": 800
+    },
+    "height": {
+      "type": "integer",
+      "default": 600
+    },
+    "animationSpeed": {
+      "type": "integer",
+      "default": 1000,
+      "description": "The speed of the animation in milliseconds"
+    },
+    "backgroundColor": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "The background color of the chart"
+    }
+  },
+  "methods": {
+    "getDataSource": {
+      "parameters": [],
+      "body": "return this.dataBindings.getDataBinding('dataBinding').getDataSource();",
+      "returnType": "DataSource"
+    }
+  },
+  "events": {},
+  "dataBindings": {
+    "myDataBinding": {
+      "feeds": [
+        {
+          "id": "dimensions",
+          "description": "Dimensions for the bar chart entities",
+          "type": "dimension"
+        },
+        {
+          "id": "measures",
+          "description": "Measurements for the animation over time",
+          "type": "mainStructureMember"
+        }
+      ]
+    }
+  }
+}
