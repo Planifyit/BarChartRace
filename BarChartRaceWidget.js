@@ -83,18 +83,38 @@
     <a href="https://www.linkedin.com/company/planifyit" target="_blank" class="follow-link">Follow us on Linkedin - Planifyit</a>
 `;
 
-    class BarChartRaceWidget extends HTMLElement {
-        constructor() {
-            super();
-            this.attachShadow({ mode: 'open' });
-            this.shadowRoot.appendChild(tmpl.content.cloneNode(true));
-
+class BarChartRaceWidget extends HTMLElement {
+    constructor() {
+        super();
+            this._shadowRoot = this.attachShadow({mode: 'open'});
+            this._shadowRoot.appendChild(tmpl.content.cloneNode(true));
             this._props = {};
-            this._data = [];
-            this._ready = false;
-            
-            // Load D3.js
-            this._loadD3();
+            this.resizeObserver = new ResizeObserver(() => this._onResize());
+            this.resizeObserver.observe(this);
+           
+        this._props = {}; // To store properties
+        this._data = []; // To store the data passed to the widget
+        this._ready = false; // To check if D3.js has loaded and the widget is ready to render
+
+        // Binding methods to ensure they have the correct 'this' context
+        this._updateData = this._updateData.bind(this);
+        this._maybeRenderChart = this._maybeRenderChart.bind(this);
+        this._renderChart = this._renderChart.bind(this);
+
+const script = document.createElement('script');
+script.src = 'https://d3js.org/d3.v7.min.js';
+script.addEventListener('load', () => {
+    console.log("D3 script loaded");
+    this._ready = true;
+    console.log("this._ready set to true:", this._ready);
+    this._maybeRenderChart();
+});
+this._shadowRoot.appendChild(script);
+script.addEventListener('error', () => {
+    console.error('Error loading D3 script');
+});
+
+        
         }
 
         async _loadD3() {
