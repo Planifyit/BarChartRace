@@ -132,12 +132,47 @@ script.addEventListener('error', () => {
             this._refresh();
     }
 
+   _onResize() {
+    console.log("Resizing Chart");
+    this._maybeRenderChart();
+    console.log("Chart Resized");
+}
+
+ _refresh() {
+        console.log("Manual refresh triggered.");
+        // Re-fetch data, re-render UI, or perform any other update logic here.
+        this._updateData(this._props.myDataBinding);
+    }
 
 
+   disconnectedCallback() {
+            this.resizeObserver.disconnect();
+        }
 
+connectedCallback() {
+    this.loadScript().then(() => {
+        this._ready = true;
+        console.log("this._ready set to true:", this._ready);
+        this._maybeRenderChart();
+    });
+}
 
-    
+    async loadScript() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://d3js.org/d3.v7.min.js';
+        script.addEventListener('load', resolve);
+        script.addEventListener('error', reject);
+        this._shadowRoot.appendChild(script);
+    });
+}
        
+    _maybeRenderChart() {
+    console.log("Checking render:", this._ready, this.currentData);
+    if (this._ready && this.currentData) {
+        this._renderChart(this.currentData);
+    }
+}
 
       
             
