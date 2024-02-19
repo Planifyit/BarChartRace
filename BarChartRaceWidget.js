@@ -112,59 +112,35 @@ script.addEventListener('load', () => {
 this._shadowRoot.appendChild(script);
 script.addEventListener('error', () => {
     console.error('Error loading D3 script');
-});
-
-        
+});      
+        }
+    
+  onCustomWidgetBeforeUpdate(changedProperties) {
+            this._props = { ...this._props, ...changedProperties };
         }
 
-        async _loadD3() {
-            if (typeof d3 === 'undefined') {
-                await import('https://d3js.org/d3.v7.min.js').then(() => {
-                    console.log('D3.js loaded successfully');
-                    this._ready = true;
-                    this._render();
-                }).catch(err => console.error('Error loading D3.js:', err));
-            } else {
-                this._ready = true;
-                this._render();
-            }
-        }
+ onCustomWidgetAfterUpdate(changedProperties) {
+    if ("myDataBinding" in changedProperties) {
+        this._updateData(changedProperties.myDataBinding);
+    }
+    this._maybeRenderChart();
+}
 
-        set data(value) {
-            this._data = value;
-            this._render();
-        }
+           onCustomWidgetResume() {
+        console.log("Widget is resumed.");
+        this._paused = false;
+            this._refresh();
+    }
 
-        _render() {
-            if (!this._ready || !this._data.length) return;
 
-            // Clear existing content
-            const chartContainer = this.shadowRoot.querySelector('#chart');
-            chartContainer.innerHTML = '';
 
-            const svg = d3.select(chartContainer).append('svg')
-                .attr('width', '100%')
-                .attr('height', '100%')
-                .style('background-color', 'white');
 
-            // Define bar chart race rendering logic here
-            console.log('Data for rendering:', this._data);
 
-            // Example: Draw bars
-            svg.selectAll('.bar')
-                .data(this._data)
-                .enter().append('rect')
-                .attr('class', 'bar')
-                .attr('x', 0)
-                .attr('y', (d, i) => i * 30)
-                .attr('width', d => d.value)
-                .attr('height', 20)
-                .attr('fill', 'steelblue');
+    
+       
 
-            // Implement dynamic update and animation logic
-        }
-
-        // Implement methods to dynamically update properties and respond to data changes
+      
+            
     }
 
     customElements.define('bar-chart-race-widget', BarChartRaceWidget);
