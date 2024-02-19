@@ -145,6 +145,33 @@ script.addEventListener('error', () => {
     }
 
 
+async _updateData(dataBinding) {
+    console.log("Data Binding Received:", dataBinding);
+    console.log("Data available:", !!dataBinding && !!dataBinding.data);
+    console.log("this._ready:", this._ready);
+        
+    if (this._paused) {
+        console.log("Widget is paused, not updating data.");
+        return;
+    }
+if (dataBinding && dataBinding.data) {
+// Transform the incoming data to a suitable format for a bar chart race
+        // This might involve sorting the data by time and preparing it for sequential animation
+        const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+          this.currentData = transformedData; // Store the transformed data for rendering
+        this._props.metadata = dataBinding.metadata;
+        console.log("Matrix Data for Rendering:", matrixData);
+
+            // Check for this._ready and call _maybeRenderChart if true
+ if (this._ready) {
+            console.log("Ready state true, attempting to render chart.");
+            await this._renderChart(transformedData);
+        }
+    }
+}
+
+    
+
    disconnectedCallback() {
             this.resizeObserver.disconnect();
         }
