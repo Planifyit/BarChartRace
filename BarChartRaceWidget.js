@@ -236,7 +236,49 @@ connectedCallback() {
     }
 }
 
-      
+    _renderChart(data) {
+    // Assuming 'data' is an array of objects with 'date', 'name', and 'value' properties
+    // and it's already sorted by 'date'
+
+    // Set up SVG and scales
+    const svg = d3.select(this._shadowRoot.getElementById('chart'))
+        .append('svg')
+        .attr('width', this._props.width)
+        .attr('height', this._props.height);
+
+    const xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.value)])
+        .range([0, this._props.width]);
+
+    const yScale = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([0, this._props.height])
+        .padding(0.1);
+
+    // Initial render of bars
+    svg.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', 0)
+        .attr('y', d => yScale(d.name))
+        .attr('width', d => xScale(d.value))
+        .attr('height', yScale.bandwidth());
+
+    // Add labels
+    svg.selectAll('.label')
+        .data(data)
+        .enter()
+        .append('text')
+        .attr('class', 'label')
+        .attr('x', d => xScale(d.value) + 5) // Offset a bit for padding
+        .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+        .text(d => d.name);
+
+    // Here, you would add the logic to animate the bars over time
+}
+  
             
     }
 
