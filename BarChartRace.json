@@ -1,11 +1,11 @@
 
 {
-  "name": "BarChartRace",
+  "name": "BarChartRaceWidget",
   "description": "Bar Chart Race Widget",
-  "newInstancePrefix": "BarChartRace",
+  "newInstancePrefix": "BarChartRaceWidget",
   "eula": "",
   "license": "",
-  "id": "BarChartRace",
+  "id": "BarChartRaceWidget",
   "version": "1.0.0",
   "supportsLinkedAnalysisFilterOnSelection": false,
   "icon":"https://planifyit.github.io/Pie_chart/PlanifyIT_Logo2.png",
