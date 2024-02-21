@@ -13,7 +13,7 @@
   "webcomponents": [
     {
       "kind": "main",
-      "tag": "bar-chart-race",
+      "tag": "bar-chart-race-widget",
       "url": "https://planifyit.github.io/BarChartRace/BarChartRaceWidget.js",
       "integrity": "",
       "ignoreIntegrity": true
