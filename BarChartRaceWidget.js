@@ -306,7 +306,24 @@ connectedCallback() {
     updateChart(0);
 }
 
-  
+   _parseMetadata(metadata) {
+        console.log("Metadata Received:", metadata);
+
+            const { dimensions: dimensionsMap, mainStructureMembers: measuresMap } = metadata;
+            const dimensions = [];
+            for (const key in dimensionsMap) {
+                const dimension = dimensionsMap[key];
+                dimensions.push({ key, ...dimension });
+            }
+            const measures = [];
+            for (const key in measuresMap) {
+                const measure = measuresMap[key];
+                measures.push({ key, ...measure });
+            }
+       console.log("Parsed Metadata:", { dimensions, measures, dimensionsMap, measuresMap });
+
+            return { dimensions, measures, dimensionsMap, measuresMap };
+        }
             
     }
 
