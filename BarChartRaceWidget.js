@@ -131,7 +131,40 @@ script.addEventListener('error', () => {
         this._paused = false;
             this._refresh();
     }
-//transformDataForBarChartRace(data) {
+transformDataForBarChartRace(data) {
+    // Assuming 'data' is an array of objects with properties: 'entity', 'value', and 'time'
+    console.log("Original Data:", data);
+
+    // Group data by time
+    let groupedByTime = d3.group(data, d => d.time);
+
+    // Sort groups by time (assuming time can be naturally sorted, adjust if using complex date formats)
+    let sortedTimes = Array.from(groupedByTime.keys()).sort();
+
+    // Transform data for each time into a format suitable for the bar chart race
+    let transformedData = sortedTimes.map(time => {
+        let entriesForTime = groupedByTime.get(time);
+
+        // Sort entities by value within each time
+        entriesForTime.sort((a, b) => b.value - a.value);
+
+        // Optionally, you can limit the number of bars to display
+        // entriesForTime = entriesForTime.slice(0, 10);
+
+        return {
+            time: time,
+            entries: entriesForTime.map((d, index) => ({
+                name: d.entity,
+                value: d.value,
+                rank: index + 1 // Rank based on sorted position
+            }))
+        };
+    });
+
+    console.log("Transformed Data for Bar Chart Race:", transformedData);
+    return transformedData;
+}
+
 // _handleGroupClick(d) 
     
    _onResize() {
