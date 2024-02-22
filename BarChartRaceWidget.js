@@ -244,36 +244,37 @@ _renderChart(data) {
         .range([0, this._props.height])
         .padding(0.1);
 
-    // Use the stored unique names for the Y scale domain
+    // Assuming 'data' is already transformed and contains unique names for the Y scale domain
     yScale.domain(this._uniqueNames);
 
-    // Assuming 'data' is already transformed and contains entries for each time point
+    // Correctly iterating through data points
+    // Assuming 'data' is structured as an array of objects, each representing a time point with an 'entries' array
     data.forEach((timePoint, index) => {
-        // Update scales
-        xScale.domain([0, d3.max(timePoint.entries, d => d.value)]);
-        yScale.domain(timePoint.entries.map(d => d.name));
+        // Update scales for each time point
+        xScale.domain([0, d3.max(timePoint.entries, entry => entry.value)]);
+        yScale.domain(timePoint.entries.map(entry => entry.name));
 
         // Data join for bars
         const bars = svg.selectAll('.bar')
-            .data(timePoint.entries, d => d.name);
+            .data(timePoint.entries, entry => entry.name);
 
         bars.enter().append('rect')
             .attr('class', 'bar')
             .attr('x', 0)
-            .attr('y', d => yScale(d.name))
+            .attr('y', entry => yScale(entry.name))
             .attr('height', yScale.bandwidth())
-            .attr('width', d => xScale(d.value));
+            .attr('width', entry => xScale(entry.value));
 
         // Data join for labels
         const labels = svg.selectAll('.label')
-            .data(timePoint.entries, d => d.name);
+            .data(timePoint.entries, entry => entry.name);
 
         labels.enter().append('text')
             .attr('class', 'label')
-            .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+            .attr('y', entry => yScale(entry.name) + yScale.bandwidth() / 2)
             .attr('dy', '0.35em') // Vertically center
-            .attr('x', d => xScale(d.value) + 5) // A little space from bar end
-            .text(d => `${d.name}: ${d.value}`);
+            .attr('x', entry => xScale(entry.value) + 5) // A little space from bar end
+            .text(entry => `${entry.name}: ${entry.value}`);
 
         // Remove exit selection
         bars.exit().remove();
