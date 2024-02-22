@@ -172,26 +172,24 @@ transformDataForBarChartRace(data) {
 
 async _updateData(dataBinding) {
     console.log("Data Binding Received:", dataBinding);
-    console.log("Data available:", !!dataBinding && !!dataBinding.data);
-    console.log("this._ready:", this._ready);
-        
-    if (this._paused) {
-        console.log("Widget is paused, not updating data.");
+    if (!dataBinding || !dataBinding.data) {
+        console.error("No data available for rendering.");
         return;
     }
-if (dataBinding && dataBinding.data) {
-// Transform the incoming data to a suitable format for a bar chart race
-        // This might involve sorting the data by time and preparing it for sequential animation
-        const transformedData = this.transformDataForBarChartRace(dataBinding.data);
-          this.currentData = transformedData; // Store the transformed data for rendering
-        this._props.metadata = dataBinding.metadata;
-        console.log("Transformed Data for Rendering:", transformedData);
+    // Transform the incoming data to a suitable format for a bar chart race
+    const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+    // Extract unique names for the Y scale domain
+    const uniqueNames = Array.from(new Set(transformedData.map(d => d.name)));
+    this._uniqueNames = uniqueNames; // Store unique names for later use in rendering
+    this.currentData = transformedData; // Store the transformed data for rendering
+    this._props.metadata = dataBinding.metadata;
+    console.log("Transformed Data for Rendering:", transformedData);
+    console.log("Unique Names for Y Scale Domain:", uniqueNames);
 
-            // Check for this._ready and call _maybeRenderChart if true
- if (this._ready) {
-            console.log("Ready state true, attempting to render chart.");
-            await this._renderChart(transformedData);
-        }
+    // Check for this._ready and call _maybeRenderChart if true
+    if (this._ready) {
+        console.log("Ready state true, attempting to render chart.");
+        this._renderChart(this.currentData);
     }
 }
 
@@ -228,8 +226,11 @@ connectedCallback() {
 
 
 
-  _renderChart(data) {
+_renderChart(data) {
     console.log("Rendering Chart with Data:", data);
+
+    // Clear existing SVG to prevent duplicates
+    this._shadowRoot.querySelector("#chart").innerHTML = "";
 
     const svg = d3.select(this._shadowRoot.getElementById('chart'))
         .append('svg')
@@ -243,61 +244,54 @@ connectedCallback() {
         .range([0, this._props.height])
         .padding(0.1);
 
-    // Assuming 'data' is already transformed and contains unique names for the Y scale domain
-    const uniqueNames = data.map(d => d.name); // Adjust based on actual data structure
-    yScale.domain(uniqueNames);
+    // Use the stored unique names for the Y scale domain
+    yScale.domain(this._uniqueNames);
 
- // Function to update the chart
-const updateChart = (index) => {
-    const currentData = data[index].entries;
+    // Assuming 'data' is already transformed and contains entries for each time point
+    data.forEach((timePoint, index) => {
+        // Update scales
+        xScale.domain([0, d3.max(timePoint.entries, d => d.value)]);
+        yScale.domain(timePoint.entries.map(d => d.name));
 
-    // Update scales
-    xScale.domain([0, d3.max(currentData, d => d.value)]);
-    yScale.domain(currentData.map(d => d.name));
+        // Data join for bars
+        const bars = svg.selectAll('.bar')
+            .data(timePoint.entries, d => d.name);
 
-    console.log("Y scale domain after setting:", yScale.domain());
-
-
-      
-      // Data join for bars
-    const bars = svg.selectAll('.bar')
-        .data(currentData, d => d.name);
-
-    bars.enter().append('rect')
-        .attr('class', 'bar')
-        .attr('x', 0)
-        .attr('y', d => {
-            const yPos = yScale(d.name);
-            console.log(`Y position for ${d.name}:`, yPos);
-            return yPos;
-        })
-        .attr('height', yScale.bandwidth())
-        .attr('width', d => xScale(d.value));
-        
+        bars.enter().append('rect')
+            .attr('class', 'bar')
+            .attr('x', 0)
+            .attr('y', d => yScale(d.name))
+            .attr('height', yScale.bandwidth())
+            .attr('width', d => xScale(d.value));
 
         // Data join for labels
-    const labels = svg.selectAll('.label')
-        .data(currentData, d => d.name);
+        const labels = svg.selectAll('.label')
+            .data(timePoint.entries, d => d.name);
 
-    labels.enter().append('text')
-        .attr('class', 'label')
-        .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
-        .attr('dy', '0.35em') // vertically center
-        .attr('x', d => xScale(d.value) + 5) // a little space from bar end
-        .text(d => `${d.name}: ${d.value}`);
-// Remove exit selection
-    bars.exit().remove();
-    labels.exit().remove();
+        labels.enter().append('text')
+            .attr('class', 'label')
+            .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+            .attr('dy', '0.35em') // Vertically center
+            .attr('x', d => xScale(d.value) + 5) // A little space from bar end
+            .text(d => `${d.name}: ${d.value}`);
 
-    // Loop through the data
-    if (index < data.length - 1) {
-        setTimeout(() => updateChart(index + 1), this._props.animationSpeed);
+        // Remove exit selection
+        bars.exit().remove();
+        labels.exit().remove();
+    });
+
+    // Start the animation with the first time point
+    if (data.length > 0) {
+        updateChart(0);
     }
-};
 
-    // Start the animation
-    updateChart(0);
+    function updateChart(index) {
+        if (index < data.length - 1) {
+            setTimeout(() => updateChart(index + 1), 1000); // Adjust timing as needed
+        }
+    }
 }
+
 
    _parseMetadata(metadata) {
         console.log("Metadata Received:", metadata);
