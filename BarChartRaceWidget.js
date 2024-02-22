@@ -133,31 +133,26 @@ script.addEventListener('error', () => {
     }
 
 
-    transformDataForBarChartRace(data) {
+transformDataForBarChartRace(data) {
     console.log("Original Data:", data);
 
-    // Adjust extraction of time, entity, and value based on SAC data structure
-    let groupedByTime = d3.group(data, d => d.dimensions_0.id); // Use dimensions_0.id for time
+    // Example transformation logic
+    let transformedData = data.map(d => ({
+        name: d.dimensions_1.label, // Assuming 'dimensions_1.label' is the category
+        value: d.measures_0.raw, // Assuming 'measures_0.raw' is the value
+        time: d.dimensions_0.id // Assuming 'dimensions_0.id' is the time or another category
+    }));
 
-    let sortedTimes = Array.from(groupedByTime.keys()).sort();
-
-    let transformedData = sortedTimes.map(time => {
-        let entriesForTime = groupedByTime.get(time);
-        entriesForTime.sort((a, b) => b.measures_0.raw - a.measures_0.raw); // Use measures_0.raw for value
-
-        return {
-            time: time,
-            entries: entriesForTime.map((d, index) => ({
-                name: d.dimensions_1.label, // Use dimensions_1.label for entity name
-                value: d.measures_0.raw, // Use measures_0.raw for value
-                rank: index + 1
-            }))
-        };
-    });
+    // Group by 'name' to ensure we have unique categories for the Y scale domain
+    let groupedData = d3.group(transformedData, d => d.name);
+    let uniqueNames = Array.from(groupedData.keys());
 
     console.log("Transformed Data for Bar Chart Race:", transformedData);
-    return transformedData;
+    console.log("Unique Names for Y Scale Domain:", uniqueNames);
+
+    return transformedData; // Adjust as needed based on your chart logic
 }
+
 
 
 // _handleGroupClick(d) 
@@ -231,24 +226,26 @@ connectedCallback() {
     }
 }
 
+
+
   _renderChart(data) {
-   console.log("Rendering Chart with Data:", data);
+    console.log("Rendering Chart with Data:", data);
 
-const svg = d3.select(this._shadowRoot.getElementById('chart'))
-    .append('svg')
-    .attr('width', this._props.width)
-    .attr('height', this._props.height);
+    const svg = d3.select(this._shadowRoot.getElementById('chart'))
+        .append('svg')
+        .attr('width', this._props.width)
+        .attr('height', this._props.height);
 
-    // Assuming 'data' is an array of objects with 'time', 'entries' properties
-    // where 'entries' is an array of { name, value, rank }
+    const xScale = d3.scaleLinear()
+        .range([0, this._props.width - 100]);
 
-// Define scales
-const xScale = d3.scaleLinear()
-    .range([0, this._props.width - 100]); // leave some space for labels
+    const yScale = d3.scaleBand()
+        .range([0, this._props.height])
+        .padding(0.1);
 
-const yScale = d3.scaleBand()
-    .range([0, this._props.height])
-    .padding(0.1);
+    // Assuming 'data' is already transformed and contains unique names for the Y scale domain
+    const uniqueNames = data.map(d => d.name); // Adjust based on actual data structure
+    yScale.domain(uniqueNames);
 
  // Function to update the chart
 const updateChart = (index) => {
