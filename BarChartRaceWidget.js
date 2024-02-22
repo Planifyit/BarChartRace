@@ -232,87 +232,71 @@ connectedCallback() {
 }
 
   _renderChart(data) {
-    console.log("Rendering Chart with Data:", data);
+   console.log("Rendering Chart with Data:", data);
 
-    const svg = d3.select(this._shadowRoot.getElementById('chart'))
-        .append('svg')
-        .attr('width', this._props.width)
-        .attr('height', this._props.height);
+const svg = d3.select(this._shadowRoot.getElementById('chart'))
+    .append('svg')
+    .attr('width', this._props.width)
+    .attr('height', this._props.height);
 
     // Assuming 'data' is an array of objects with 'time', 'entries' properties
     // where 'entries' is an array of { name, value, rank }
 
-    // Define scales
-    const xScale = d3.scaleLinear()
-        .range([0, this._props.width - 100]); // leave some space for labels
+// Define scales
+const xScale = d3.scaleLinear()
+    .range([0, this._props.width - 100]); // leave some space for labels
 
-    const yScale = d3.scaleBand()
-        .range([0, this._props.height])
-        .padding(0.1);
+const yScale = d3.scaleBand()
+    .range([0, this._props.height])
+    .padding(0.1);
 
-    // Function to update the chart
-    const updateChart = (index) => {
-        const currentData = data[index].entries;
+ // Function to update the chart
+const updateChart = (index) => {
+    const currentData = data[index].entries;
 
- // Debugging logs
-    console.log(currentData.map(d => d.value)); // Check values for xScale
-    console.log(currentData.map(d => d.name)); // Check values for yScale
-    console.log("Current data for chart:", currentData);
-        
-        // Update scales
+    // Update scales
     xScale.domain([0, d3.max(currentData, d => d.value)]);
     yScale.domain(currentData.map(d => d.name));
 
-         // Additional debugging logs after updating scales
-    console.log("X scale domain:", xScale.domain());
-    console.log("Y scale domain:", yScale.domain());
- console.log("Y scale output for '2020-01-01':", yScale('2020-01-01'));
-console.log("Y scale output for '2013-01-01':", yScale('2013-01-01'));
+    console.log("Y scale domain after setting:", yScale.domain());
 
-        // Data join for bars
-        const bars = svg.selectAll('.bar')
-            .data(currentData, d => d.name);
 
-        console.log("Values for bars:", currentData.map(d => ({ name: d.name, value: xScale(d.value), y: yScale(d.name) })));
+      
+      // Data join for bars
+    const bars = svg.selectAll('.bar')
+        .data(currentData, d => d.name);
 
-        bars.enter().append('rect')
-    .attr('class', 'bar')
-    .attr('x', 0)
-.attr('y', d => {
-    console.log(`Data passed to Y scale for ${d.name}:`, d.name);
-    return yScale(d.name);
-})
-
-    .attr('height', yScale.bandwidth())
-    .attr('width', d => {
-        console.log(`Width for ${d.name}:`, xScale(d.value)); // Debugging log for width
-        return xScale(d.value);
-    });
+    bars.enter().append('rect')
+        .attr('class', 'bar')
+        .attr('x', 0)
+        .attr('y', d => {
+            const yPos = yScale(d.name);
+            console.log(`Y position for ${d.name}:`, yPos);
+            return yPos;
+        })
+        .attr('height', yScale.bandwidth())
+        .attr('width', d => xScale(d.value));
         
 
         // Data join for labels
-        const labels = svg.selectAll('.label')
-            .data(currentData, d => d.name);
+    const labels = svg.selectAll('.label')
+        .data(currentData, d => d.name);
 
-        // Enter selection for labels
-        labels.enter().append('text')
-            .attr('class', 'label')
-            .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
-            .attr('dy', '0.35em') // vertically center
-            .merge(labels) // Merge enter and update selections
-            .transition().duration(this._props.animationSpeed)
-            .attr('x', d => xScale(d.value) + 5) // a little space from bar end
-            .text(d => `${d.name}: ${d.value}`);
+    labels.enter().append('text')
+        .attr('class', 'label')
+        .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+        .attr('dy', '0.35em') // vertically center
+        .attr('x', d => xScale(d.value) + 5) // a little space from bar end
+        .text(d => `${d.name}: ${d.value}`);
+// Remove exit selection
+    bars.exit().remove();
+    labels.exit().remove();
 
-        // Remove exit selection
-        bars.exit().remove();
-        labels.exit().remove();
-
-        // Loop through the data
-        if (index < data.length - 1) {
-            setTimeout(() => updateChart(index + 1), this._props.animationSpeed);
-        }
-    };
+    // Loop through the data
+    if (index < data.length - 1) {
+        setTimeout(() => updateChart(index + 1), this._props.animationSpeed);
+    }
+};
 
     // Start the animation
     updateChart(0);
