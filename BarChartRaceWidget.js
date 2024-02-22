@@ -266,6 +266,9 @@ connectedCallback() {
          // Additional debugging logs after updating scales
     console.log("X scale domain:", xScale.domain());
     console.log("Y scale domain:", yScale.domain());
+ console.log("Y scale output for '2020-01-01':", yScale('2020-01-01'));
+console.log("Y scale output for '2013-01-01':", yScale('2013-01-01'));
+
         // Data join for bars
         const bars = svg.selectAll('.bar')
             .data(currentData, d => d.name);
@@ -275,10 +278,11 @@ connectedCallback() {
         bars.enter().append('rect')
     .attr('class', 'bar')
     .attr('x', 0)
-    .attr('y', d => {
-        console.log(`Y position for ${d.name}:`, yScale(d.name)); // Debugging log for Y position
-        return yScale(d.name);
-    })
+.attr('y', d => {
+    console.log(`Data passed to Y scale for ${d.name}:`, d.name);
+    return yScale(d.name);
+})
+
     .attr('height', yScale.bandwidth())
     .attr('width', d => {
         console.log(`Width for ${d.name}:`, xScale(d.value)); // Debugging log for width
