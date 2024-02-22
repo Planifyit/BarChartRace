@@ -254,17 +254,16 @@ connectedCallback() {
     const updateChart = (index) => {
         const currentData = data[index].entries;
 
-console.log(currentData.map(d => d.value)); // Check values for xScale
-console.log(currentData.map(d => d.name)); // Check values for yScale
-console.log("Current data for chart:", currentData);
-console.log("X scale domain:", xScale.domain());
-console.log("Y scale domain:", yScale.domain());
+ // Debugging logs
+    console.log(currentData.map(d => d.value)); // Check values for xScale
+    console.log(currentData.map(d => d.name)); // Check values for yScale
+    console.log("Current data for chart:", currentData);
         
         // Update scales
-        xScale.domain([0, d3.max(currentData, d => d.value)]);
-        yScale.domain(currentData.map(d => d.name));
+    xScale.domain([0, d3.max(currentData, d => d.value)]);
+    yScale.domain(currentData.map(d => d.name));
 
-           // Log updated scale domains
+         // Additional debugging logs after updating scales
     console.log("X scale domain:", xScale.domain());
     console.log("Y scale domain:", yScale.domain());
         // Data join for bars
