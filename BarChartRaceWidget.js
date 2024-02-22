@@ -270,16 +270,21 @@ connectedCallback() {
         const bars = svg.selectAll('.bar')
             .data(currentData, d => d.name);
 
-        // Enter selection
+        console.log("Values for bars:", currentData.map(d => ({ name: d.name, value: xScale(d.value), y: yScale(d.name) })));
+
         bars.enter().append('rect')
-            .attr('class', 'bar')
-            .attr('x', 0)
-            .attr('y', d => yScale(d.name))
-            .attr('height', yScale.bandwidth())
-            .merge(bars) // Merge enter and update selections
-            .transition().duration(this._props.animationSpeed)
-            .attr('width', d => xScale(d.value))
-            .attr('y', d => yScale(d.name));
+    .attr('class', 'bar')
+    .attr('x', 0)
+    .attr('y', d => {
+        console.log(`Y position for ${d.name}:`, yScale(d.name)); // Debugging log for Y position
+        return yScale(d.name);
+    })
+    .attr('height', yScale.bandwidth())
+    .attr('width', d => {
+        console.log(`Width for ${d.name}:`, xScale(d.value)); // Debugging log for width
+        return xScale(d.value);
+    });
+        
 
         // Data join for labels
         const labels = svg.selectAll('.label')
