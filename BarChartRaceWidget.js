@@ -92,7 +92,7 @@ class BarChartRaceWidget extends HTMLElement {
             this.resizeObserver = new ResizeObserver(() => this._onResize());
             this.resizeObserver.observe(this);
            
-        this._props = {}; // To store properties
+       
         this._data = []; // To store the data passed to the widget
         this._ready = false; // To check if D3.js has loaded and the widget is ready to render
 
@@ -142,6 +142,7 @@ transformDataForBarChartRace(data) {
         value: d.measures_0.raw, // Assuming 'measures_0.raw' is the value
         time: d.dimensions_0.id // Assuming 'dimensions_0.id' is the time or another category
     }));
+    console.log("transformedData:", transformedData);
 
     // Group by 'name' to ensure we have unique categories for the Y scale domain
     let groupedData = d3.group(transformedData, d => d.name);
@@ -149,11 +150,28 @@ transformDataForBarChartRace(data) {
 
     console.log("Transformed Data for Bar Chart Race:", transformedData);
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
-
+        console.log("Unique Names for Y Scale Domain:", groupedData);
     return transformedData; // Adjust as needed based on your chart logic
 }
 
+     _handleGroupClick(d) {
+            const { dimensions } = this._parseMetadata(this._props.metadata);
+            const [dimension] = dimensions;
 
+            const linkedAnalysis = this._props['dataBindings'].getDataBinding('myDataBinding').getLinkedAnalysis();
+
+            if (d.selected) {
+                linkedAnalysis.removeFilters();
+                d.selected = false;
+            } else {
+                const selection = {};
+                const key = dimension.key;
+                const dimensionId = dimension.id;
+                selection[dimensionId] = d.index;  
+                linkedAnalysis.setFilters(selection);
+                d.selected = true;
+            }
+        }
 
 // _handleGroupClick(d) 
     
@@ -171,26 +189,33 @@ transformDataForBarChartRace(data) {
 
 
 async _updateData(dataBinding) {
+    
     console.log("Data Binding Received:", dataBinding);
-    if (!dataBinding || !dataBinding.data) {
-        console.error("No data available for rendering.");
+    console.log("Data available:", !!dataBinding && !!dataBinding.data);
+    console.log("this._ready:", this._ready);
+
+     if (this._paused) {
+        console.log("Widget is paused, not updating data.");
         return;
     }
-    // Transform the incoming data to a suitable format for a bar chart race
-    const transformedData = this.transformDataForBarChartRace(dataBinding.data);
-    // Extract unique names for the Y scale domain
+    
+    if (!dataBinding || !dataBinding.data) {
+       const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+        this.currentData = transformedData; // Store the transformed data for rendering
     const uniqueNames = Array.from(new Set(transformedData.map(d => d.name)));
     this._uniqueNames = uniqueNames; // Store unique names for later use in rendering
-    this.currentData = transformedData; // Store the transformed data for rendering
-    this._props.metadata = dataBinding.metadata;
+    
+        this._props.metadata = dataBinding.metadata;
     console.log("Transformed Data for Rendering:", transformedData);
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
 
-    // Check for this._ready and call _maybeRenderChart if true
-    if (this._ready) {
+          if (this._ready) {
         console.log("Ready state true, attempting to render chart.");
-        this._renderChart(this.currentData);
+      await  this._renderChart(currentData);
     }
+    }
+ 
+  
 }
 
     
@@ -228,7 +253,8 @@ connectedCallback() {
 
 _renderChart(data) {
     console.log("Rendering Chart with Data:", data);
-
+  console.log("D3 available:", typeof d3 !== "undefined");
+  
     // Clear existing SVG to prevent duplicates
     this._shadowRoot.querySelector("#chart").innerHTML = "";
 
