@@ -86,53 +86,100 @@
 class BarChartRaceWidget extends HTMLElement {
     constructor() {
         super();
-            this._shadowRoot = this.attachShadow({mode: 'open'});
-            this._shadowRoot.appendChild(tmpl.content.cloneNode(true));
-            this._props = {};
-            this.resizeObserver = new ResizeObserver(() => this._onResize());
-            this.resizeObserver.observe(this);
-           
-       
+        this._shadowRoot = this.attachShadow({ mode: 'open' });
+        this._shadowRoot.appendChild(tmpl.content.cloneNode(true));
+        this._props = {};
+        this.resizeObserver = new ResizeObserver(() => this._onResize());
+        this.resizeObserver.observe(this);
+
         this._data = []; // To store the data passed to the widget
         this._ready = false; // To check if D3.js has loaded and the widget is ready to render
+        this._pendingData = null; // To temporarily store data if D3 is not ready
 
         // Binding methods to ensure they have the correct 'this' context
         this._updateData = this._updateData.bind(this);
         this._maybeRenderChart = this._maybeRenderChart.bind(this);
         this._renderChart = this._renderChart.bind(this);
 
-const script = document.createElement('script');
-script.src = 'https://d3js.org/d3.v7.min.js';
-script.addEventListener('load', () => {
-    console.log("D3 script loaded");
-    this._ready = true;
-    console.log("this._ready set to true:", this._ready);
-    this._maybeRenderChart();
-});
-this._shadowRoot.appendChild(script);
-script.addEventListener('error', () => {
-    console.error('Error loading D3 script');
-});      
-        }
-    
-  onCustomWidgetBeforeUpdate(changedProperties) {
-            this._props = { ...this._props, ...changedProperties };
-        }
-
- onCustomWidgetAfterUpdate(changedProperties) {
-    if ("myDataBinding" in changedProperties) {
-        this._updateData(changedProperties.myDataBinding);
+        this.loadScript();
     }
-    this._maybeRenderChart();
-}
+    
+       async loadScript() {
+        try {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://d3js.org/d3.v7.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                this._shadowRoot.appendChild(script);
+            });
+            console.log("D3 script loaded");
+            this._ready = true;
+            if (this._pendingData) {
+                this._updateData(this._pendingData);
+                this._pendingData = null; // Clear pending data after processing
+            }
+            this._maybeRenderChart();
+        } catch (error) {
+            console.error('Error loading D3 script', error);
+        }
+    }
+   
 
-           onCustomWidgetResume() {
+    
+   onCustomWidgetBeforeUpdate(changedProperties) {
+        this._props = { ...this._props, ...changedProperties };
+    }
+
+    onCustomWidgetAfterUpdate(changedProperties) {
+        if ("myDataBinding" in changedProperties) {
+            this._updateData(changedProperties.myDataBinding);
+        }
+    }
+
+onCustomWidgetResume() {
         console.log("Widget is resumed.");
         this._paused = false;
-            this._refresh();
+        this._refresh();
+    }
+    
+    _refresh() {
+        console.log("Manual refresh triggered.");
+        if (this._pendingData) {
+            this._updateData(this._pendingData);
+        } else {
+            console.log("No pending data to refresh.");
+        }
+    }
+
+async _updateData(dataBinding) {
+        console.log("Data Binding Received:", dataBinding);
+        if (!this._ready) {
+            console.log("D3 not ready, storing data for later");
+            this._pendingData = dataBinding; // Store data to process later
+            return;
+        }
+
+        if (dataBinding && dataBinding.data) {
+            const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+            this.currentData = transformedData; // Store the transformed data for rendering
+            console.log("Transformed Data for Rendering:", transformedData);
+            this._maybeRenderChart();
+        } else {
+            console.log("No data available for rendering.");
+        }
+    }
+
+ _maybeRenderChart() {
+        if (this._ready && this.currentData) {
+            this._renderChart(this.currentData);
+        } else {
+            console.log("D3 not ready or no data available");
+        }
     }
 
 
+    
   transformDataForBarChartRace(data) {
     if (!data) {
         console.error("No data provided to transformDataForBarChartRace");
@@ -185,45 +232,7 @@ script.addEventListener('error', () => {
     console.log("Resizing Chart");
     this._maybeRenderChart();
     console.log("Chart Resized");
-}
-
- _refresh() {
-        console.log("Manual refresh triggered.");
-        // Re-fetch data, re-render UI, or perform any other update logic here.
-        this._updateData(this._props.myDataBinding);
-    }
-
-
-async _updateData(dataBinding) {
-    console.log("Data Binding Received:", dataBinding);
-    console.log("Data available:", !!dataBinding && !!dataBinding.data);
-    console.log("this._ready:", this._ready);
-
-    if (this._paused) {
-        console.log("Widget is paused, not updating data.");
-        return;
-    }
-
-    if (dataBinding && dataBinding.data) {
-        const transformedData = this.transformDataForBarChartRace(dataBinding.data);
-        this.currentData = transformedData; // Store the transformed data for rendering
-        const uniqueNames = Array.from(new Set(transformedData.map(d => d.name)));
-        this._uniqueNames = uniqueNames; // Store unique names for later use in rendering
-
-        this._props.metadata = dataBinding.metadata;
-        console.log("Transformed Data for Rendering:", transformedData);
-        console.log("Unique Names for Y Scale Domain:", uniqueNames);
-
-        if (this._ready) {
-            console.log("Ready state true, attempting to render chart.");
-            this._renderChart(transformedData); // No need to await here
-        }
-    } else {
-        console.log("No data available for rendering.");
-    }
-}
-
-    
+}    
 
    disconnectedCallback() {
             this.resizeObserver.disconnect();
@@ -237,23 +246,8 @@ connectedCallback() {
     });
 }
 
-    async loadScript() {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://d3js.org/d3.v7.min.js';
-        script.addEventListener('load', resolve);
-        script.addEventListener('error', reject);
-        this._shadowRoot.appendChild(script);
-    });
-}
-       
-    _maybeRenderChart() {
-    console.log("Checking render:", this._ready, this.currentData);
-    if (this._ready && this.currentData) {
-        this._renderChart(this.currentData);
-    }
-}
 
+       
 
 
 _renderChart(data) {
