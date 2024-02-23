@@ -248,10 +248,13 @@ _renderChart(data) {
     yScale.domain(this._uniqueNames);
 
     // Correctly iterating through data points
-    // Assuming 'data' is structured as an array of objects, each representing a time point with an 'entries' array
+    // Assuming 'data' is structured correctly
     data.forEach((timePoint, index) => {
-        // Update scales for each time point
-        xScale.domain([0, d3.max(timePoint.entries, entry => entry.value)]);
+        // Ensure we're passing an array of numbers to d3.max
+        const maxValue = d3.max(timePoint.entries.map(entry => entry.value));
+
+        // Update scales
+        xScale.domain([0, maxValue]);
         yScale.domain(timePoint.entries.map(entry => entry.name));
 
         // Data join for bars
