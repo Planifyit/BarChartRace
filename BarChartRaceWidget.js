@@ -133,7 +133,13 @@ script.addEventListener('error', () => {
     }
 
 
-transformDataForBarChartRace(data) {
+  transformDataForBarChartRace(data) {
+    if (!data) {
+        console.error("No data provided to transformDataForBarChartRace");
+        return [];
+    }
+
+ 
     console.log("Original Data:", data);
 
     // Example transformation logic
@@ -189,33 +195,32 @@ transformDataForBarChartRace(data) {
 
 
 async _updateData(dataBinding) {
-    
     console.log("Data Binding Received:", dataBinding);
     console.log("Data available:", !!dataBinding && !!dataBinding.data);
     console.log("this._ready:", this._ready);
 
-     if (this._paused) {
+    if (this._paused) {
         console.log("Widget is paused, not updating data.");
         return;
     }
-    
-    if (!dataBinding || !dataBinding.data) {
-       const transformedData = this.transformDataForBarChartRace(dataBinding.data);
-        this.currentData = transformedData; // Store the transformed data for rendering
-    const uniqueNames = Array.from(new Set(transformedData.map(d => d.name)));
-    this._uniqueNames = uniqueNames; // Store unique names for later use in rendering
-    
-        this._props.metadata = dataBinding.metadata;
-    console.log("Transformed Data for Rendering:", transformedData);
-    console.log("Unique Names for Y Scale Domain:", uniqueNames);
 
-          if (this._ready) {
-        console.log("Ready state true, attempting to render chart.");
-      await  this._renderChart(currentData);
+    if (dataBinding && dataBinding.data) {
+        const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+        this.currentData = transformedData; // Store the transformed data for rendering
+        const uniqueNames = Array.from(new Set(transformedData.map(d => d.name)));
+        this._uniqueNames = uniqueNames; // Store unique names for later use in rendering
+
+        this._props.metadata = dataBinding.metadata;
+        console.log("Transformed Data for Rendering:", transformedData);
+        console.log("Unique Names for Y Scale Domain:", uniqueNames);
+
+        if (this._ready) {
+            console.log("Ready state true, attempting to render chart.");
+            this._renderChart(transformedData); // No need to await here
+        }
+    } else {
+        console.log("No data available for rendering.");
     }
-    }
- 
-  
 }
 
     
