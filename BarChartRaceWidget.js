@@ -153,22 +153,33 @@ onCustomWidgetResume() {
     }
 
 async _updateData(dataBinding) {
-        console.log("Data Binding Received:", dataBinding);
-        if (!this._ready) {
-            console.log("D3 not ready, storing data for later");
-            this._pendingData = dataBinding; // Store data to process later
-            return;
-        }
+    console.log("Data Binding Received:", dataBinding);
+    if (!this._ready) {
+        console.log("D3 not ready, storing data for later");
+        // Ensure _pendingData stores the entire dataBinding object
+        this._pendingData = dataBinding; 
+        return;
+    }
 
+    try {
         if (dataBinding && dataBinding.data) {
+            // Wrap the transformation logic in a try-catch block
             const transformedData = this.transformDataForBarChartRace(dataBinding.data);
-            this.currentData = transformedData; // Store the transformed data for rendering
+            if (!transformedData || transformedData.length === 0) {
+                throw new Error("Transformed data is empty or invalid.");
+            }
+            this.currentData = transformedData; 
             console.log("Transformed Data for Rendering:", transformedData);
             this._maybeRenderChart();
         } else {
             console.log("No data available for rendering.");
         }
+    } catch (error) {
+        console.error("Error processing data for rendering:", error);
+        // Handle the error as needed (e.g., display an error message to the user)
     }
+}
+
 
  _maybeRenderChart() {
         if (this._ready && this.currentData) {
