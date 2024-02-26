@@ -270,11 +270,8 @@ connectedCallback() {
 
 
 _renderChart(data) {
-     console.log("Rendering Chart with Data:", JSON.stringify(data, null, 2));
- 
-    console.log("Rendering Chart with Data:", data);
-  console.log("D3 available:", typeof d3 !== "undefined");
-  
+    console.log("Rendering Chart with Data:", JSON.stringify(data, null, 2));
+
     // Clear existing SVG to prevent duplicates
     this._shadowRoot.querySelector("#chart").innerHTML = "";
 
@@ -290,65 +287,38 @@ _renderChart(data) {
         .range([0, this._props.height])
         .padding(0.1);
 
-    // Assuming 'data' is already transformed and contains unique names for the Y scale domain
-    console.log("Unique Names for Y Scale:", this._uniqueNames);
-    console.log("Setting Y Scale Domain with:", this._uniqueNames);
+    // Set the domain for the yScale using unique names
     yScale.domain(this._uniqueNames);
 
-    
- // Assuming data is an array of objects with 'name' and 'value' keys
-    const maxValue = d3.max(data, d => d.value); // Correctly calculate max value
-    console.log("Max Value:", maxValue);
+    // Find the maximum value for the xScale domain
+    const maxValue = d3.max(data, d => d.value);
     xScale.domain([0, maxValue]);
 
-    // Correctly iterating through data points
-    // Assuming 'data' is structured correctly
-    console.log("Data for Iteration:", JSON.stringify(data, null, 2));
-    data.forEach((timePoint, index) => {
-        // Ensure we're passing an array of numbers to d3.max
-        const maxValue = d3.max(timePoint.entries.map(entry => entry.value));
+    // Data join for bars
+    const bars = svg.selectAll('.bar')
+        .data(data, d => d.name + d.time); // Use a combination of name and time as key
 
-        // Update scales
-        xScale.domain([0, maxValue]);
-        yScale.domain(timePoint.entries.map(entry => entry.name));
+    bars.enter().append('rect')
+        .attr('class', 'bar')
+        .attr('x', 0)
+        .attr('y', d => yScale(d.name))
+        .attr('height', yScale.bandwidth())
+        .attr('width', d => xScale(d.value));
 
-        // Data join for bars
-        const bars = svg.selectAll('.bar')
-            .data(timePoint.entries, entry => entry.name);
+    // Data join for labels
+    const labels = svg.selectAll('.label')
+        .data(data, d => d.name + d.time); // Use a combination of name and time as key
 
-        bars.enter().append('rect')
-            .attr('class', 'bar')
-            .attr('x', 0)
-            .attr('y', entry => yScale(entry.name))
-            .attr('height', yScale.bandwidth())
-            .attr('width', entry => xScale(entry.value));
+    labels.enter().append('text')
+        .attr('class', 'label')
+        .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+        .attr('dy', '0.35em') // Vertically center
+        .attr('x', d => xScale(d.value) + 5) // A little space from bar end
+        .text(d => `${d.name}: ${d.value}`);
 
-        // Data join for labels
-        const labels = svg.selectAll('.label')
-            .data(timePoint.entries, entry => entry.name);
-
-        labels.enter().append('text')
-            .attr('class', 'label')
-            .attr('y', entry => yScale(entry.name) + yScale.bandwidth() / 2)
-            .attr('dy', '0.35em') // Vertically center
-            .attr('x', entry => xScale(entry.value) + 5) // A little space from bar end
-            .text(entry => `${entry.name}: ${entry.value}`);
-
-        // Remove exit selection
-        bars.exit().remove();
-        labels.exit().remove();
-    });
-
-    // Start the animation with the first time point
-    if (data.length > 0) {
-        updateChart(0);
-    }
-
-    function updateChart(index) {
-        if (index < data.length - 1) {
-            setTimeout(() => updateChart(index + 1), 1000); // Adjust timing as needed
-        }
-    }
+    // Remove exit selection
+    bars.exit().remove();
+    labels.exit().remove();
 }
 
 
