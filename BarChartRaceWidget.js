@@ -287,6 +287,9 @@ _renderChart(data) {
         .range([0, this._props.height])
         .padding(0.1);
 
+    // Debugging: Log the unique names to ensure they are correctly set
+    console.log("Unique Names for Y Scale:", this._uniqueNames);
+
     // Set the domain for the yScale using unique names
     yScale.domain(this._uniqueNames);
 
@@ -301,9 +304,19 @@ _renderChart(data) {
     bars.enter().append('rect')
         .attr('class', 'bar')
         .attr('x', 0)
-        .attr('y', d => yScale(d.name))
+        // Debugging: Log yScale output to check for NaN
+        .attr('y', d => {
+            const yPos = yScale(d.name);
+            console.log(`yScale for ${d.name}:`, yPos);
+            return yPos;
+        })
         .attr('height', yScale.bandwidth())
-        .attr('width', d => xScale(d.value));
+        // Debugging: Log xScale output to check for NaN
+        .attr('width', d => {
+            const width = xScale(d.value);
+            console.log(`xScale for ${d.value}:`, width);
+            return width;
+        });
 
     // Data join for labels
     const labels = svg.selectAll('.label')
@@ -320,6 +333,7 @@ _renderChart(data) {
     bars.exit().remove();
     labels.exit().remove();
 }
+
 
 
    _parseMetadata(metadata) {
