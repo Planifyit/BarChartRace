@@ -283,6 +283,11 @@ _renderChart(data) {
     // Assuming 'data' is already transformed and contains unique names for the Y scale domain
     yScale.domain(this._uniqueNames);
 
+    
+ // Assuming data is an array of objects with 'name' and 'value' keys
+    const maxValue = d3.max(data, d => d.value); // Correctly calculate max value
+    xScale.domain([0, maxValue]);
+
     // Correctly iterating through data points
     // Assuming 'data' is structured correctly
     data.forEach((timePoint, index) => {
