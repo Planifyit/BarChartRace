@@ -164,7 +164,9 @@ async _updateData(dataBinding) {
     try {
         if (dataBinding && dataBinding.data) {
             // Wrap the transformation logic in a try-catch block
+            console.log("Original Data:", dataBinding.data);
             const transformedData = this.transformDataForBarChartRace(dataBinding.data);
+            console.log("Transformed Data:", transformedData);
             if (!transformedData || transformedData.length === 0) {
                 throw new Error("Transformed data is empty or invalid.");
             }
@@ -182,6 +184,7 @@ async _updateData(dataBinding) {
 
 
  _maybeRenderChart() {
+     console.log("Ready to render. Data:", this.currentData);
         if (this._ready && this.currentData) {
             this._renderChart(this.currentData);
         } else {
@@ -215,6 +218,8 @@ async _updateData(dataBinding) {
     console.log("Transformed Data for Bar Chart Race:", transformedData);
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
         console.log("Unique Names for Y Scale Domain:", groupedData);
+          console.log("Grouped Data:", groupedData);
+    console.log("Unique Names:", uniqueNames);
     return transformedData; // Adjust as needed based on your chart logic
 }
 
@@ -262,6 +267,8 @@ connectedCallback() {
 
 
 _renderChart(data) {
+     console.log("Rendering Chart with Data:", JSON.stringify(data, null, 2));
+ 
     console.log("Rendering Chart with Data:", data);
   console.log("D3 available:", typeof d3 !== "undefined");
   
@@ -281,15 +288,18 @@ _renderChart(data) {
         .padding(0.1);
 
     // Assuming 'data' is already transformed and contains unique names for the Y scale domain
+    console.log("Unique Names for Y Scale:", this._uniqueNames);
     yScale.domain(this._uniqueNames);
 
     
  // Assuming data is an array of objects with 'name' and 'value' keys
     const maxValue = d3.max(data, d => d.value); // Correctly calculate max value
+    console.log("Max Value:", maxValue);
     xScale.domain([0, maxValue]);
 
     // Correctly iterating through data points
     // Assuming 'data' is structured correctly
+    console.log("Data for Iteration:", JSON.stringify(data, null, 2));
     data.forEach((timePoint, index) => {
         // Ensure we're passing an array of numbers to d3.max
         const maxValue = d3.max(timePoint.entries.map(entry => entry.value));
