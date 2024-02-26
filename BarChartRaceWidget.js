@@ -214,7 +214,10 @@ async _updateData(dataBinding) {
     // Group by 'name' to ensure we have unique categories for the Y scale domain
     let groupedData = d3.group(transformedData, d => d.name);
     let uniqueNames = Array.from(groupedData.keys());
-
+      
+    console.log("Unique Names for Y Scale Domain:", uniqueNames);
+    this._uniqueNames = uniqueNames; // Make sure this line exists and is executed 
+      
     console.log("Transformed Data for Bar Chart Race:", transformedData);
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
         console.log("Unique Names for Y Scale Domain:", groupedData);
@@ -289,6 +292,7 @@ _renderChart(data) {
 
     // Assuming 'data' is already transformed and contains unique names for the Y scale domain
     console.log("Unique Names for Y Scale:", this._uniqueNames);
+    console.log("Setting Y Scale Domain with:", this._uniqueNames);
     yScale.domain(this._uniqueNames);
 
     
