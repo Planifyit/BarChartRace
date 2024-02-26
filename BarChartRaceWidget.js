@@ -280,22 +280,18 @@ _renderChart(data) {
         .attr('width', this._props.width)
         .attr('height', this._props.height);
 
+    // Ensure the xScale covers the range of values in your data
     const xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.value)])
         .range([0, this._props.width - 100]);
 
+    // Ensure the yScale is set with the correct domain of unique names
     const yScale = d3.scaleBand()
+        .domain(this._uniqueNames)
         .range([0, this._props.height])
         .padding(0.1);
 
-    // Debugging: Log the unique names to ensure they are correctly set
     console.log("Unique Names for Y Scale:", this._uniqueNames);
-
-    // Set the domain for the yScale using unique names
-    yScale.domain(this._uniqueNames);
-
-    // Find the maximum value for the xScale domain
-    const maxValue = d3.max(data, d => d.value);
-    xScale.domain([0, maxValue]);
 
     // Data join for bars
     const bars = svg.selectAll('.bar')
@@ -304,14 +300,12 @@ _renderChart(data) {
     bars.enter().append('rect')
         .attr('class', 'bar')
         .attr('x', 0)
-        // Debugging: Log yScale output to check for NaN
         .attr('y', d => {
             const yPos = yScale(d.name);
             console.log(`yScale for ${d.name}:`, yPos);
             return yPos;
         })
         .attr('height', yScale.bandwidth())
-        // Debugging: Log xScale output to check for NaN
         .attr('width', d => {
             const width = xScale(d.value);
             console.log(`xScale for ${d.value}:`, width);
@@ -324,15 +318,16 @@ _renderChart(data) {
 
     labels.enter().append('text')
         .attr('class', 'label')
+        .attr('x', d => xScale(d.value) + 5) // A little space from bar end
         .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
         .attr('dy', '0.35em') // Vertically center
-        .attr('x', d => xScale(d.value) + 5) // A little space from bar end
         .text(d => `${d.name}: ${d.value}`);
 
     // Remove exit selection
     bars.exit().remove();
     labels.exit().remove();
 }
+
 
 
 
