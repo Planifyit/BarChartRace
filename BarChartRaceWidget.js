@@ -201,20 +201,28 @@ async _updateData(dataBinding) {
 
     
 transformDataForBarChartRace(data) {
+    // Check if data is provided
     if (!data) {
         console.error("No data provided to transformDataForBarChartRace");
         return [];
     }
 
-    console.log("Original Data:", data);
+    console.log("Original Data:", JSON.stringify(data, null, 2));
 
-    // Example transformation logic
-    let transformedData = data.map(d => ({
-        name: d.dimensions_1.label, // Assuming 'dimensions_1.label' is the category
-        value: d.measures_0.raw, // Assuming 'measures_0.raw' is the value
-        time: d.dimensions_0.id // Assuming 'dimensions_0.id' is the time or another category
-    }));
-    console.log("transformedData:", transformedData);
+    // Transform the data
+    let transformedData = data.map((d, index) => {
+        // Log if any expected property is missing
+        if (!d.dimensions_1?.label || typeof d.measures_0?.raw !== 'number' || !d.dimensions_0?.id) {
+            console.error(`Data integrity issue at index ${index}:`, d);
+        }
+        return {
+            name: d.dimensions_1.label, // Assuming 'dimensions_1.label' is the category
+            value: d.measures_0.raw, // Assuming 'measures_0.raw' is the value
+            time: d.dimensions_0.id // Assuming 'dimensions_0.id' is the time or another category
+        };
+    });
+
+    console.log("Transformed Data:", JSON.stringify(transformedData, null, 2));
 
     // Group by 'name' to ensure we have unique categories for the Y scale domain
     let groupedData = d3.group(transformedData, d => d.name);
@@ -223,24 +231,20 @@ transformDataForBarChartRace(data) {
     // Debugging: Check if any name is undefined or not expected
     uniqueNames.forEach(name => {
         if (name === undefined || name === null || name.trim() === "") {
-            console.error("Undefined, null, or empty name found in unique names:", uniqueNames);
+            console.error("Undefined, null, or empty name found in unique names:", name);
         }
     });
 
-    if (uniqueNames.includes(undefined)) {
-        console.error("Undefined found in unique names:", uniqueNames);
-    }
-
+    // Log the unique names for the Y scale domain
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
-    this._uniqueNames = uniqueNames; // Make sure this line exists and is executed 
 
-    console.log("Transformed Data for Bar Chart Race:", transformedData);
-    console.log("Unique Names for Y Scale Domain:", uniqueNames);
-    console.log("Unique Names for Y Scale Domain:", groupedData);
-    console.log("Grouped Data:", groupedData);
-    console.log("Unique Names:", uniqueNames);
-    return transformedData; // Adjust as needed based on your chart logic
+    // Ensure uniqueNames is correctly set for further processing
+    this._uniqueNames = uniqueNames;
+
+    // Return the transformed data
+    return transformedData;
 }
+
 
 
      _handleGroupClick(d) {
