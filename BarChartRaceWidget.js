@@ -293,6 +293,14 @@ _renderChart(data) {
 
     console.log("Unique Names for Y Scale:", this._uniqueNames);
 
+    // Debugging: Check if any unique names are causing issues
+    this._uniqueNames.forEach(name => {
+        const yPos = yScale(name);
+        if (yPos === undefined) {
+            console.error(`Issue with yScale for name: ${name}`);
+        }
+    });
+
     // Data join for bars
     const bars = svg.selectAll('.bar')
         .data(data, d => d.name + d.time); // Use a combination of name and time as key
@@ -303,7 +311,7 @@ _renderChart(data) {
         .attr('y', d => {
             const yPos = yScale(d.name);
             console.log(`yScale for ${d.name}:`, yPos);
-            return yPos;
+            return yPos !== undefined ? yPos : 0; // Fallback to 0 if yPos is undefined
         })
         .attr('height', yScale.bandwidth())
         .attr('width', d => {
@@ -319,7 +327,11 @@ _renderChart(data) {
     labels.enter().append('text')
         .attr('class', 'label')
         .attr('x', d => xScale(d.value) + 5) // A little space from bar end
-        .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
+        .attr('y', d => {
+            const yPos = yScale(d.name) + yScale.bandwidth() / 2;
+            console.log(`Label yPos for ${d.name}:`, yPos);
+            return yPos;
+        })
         .attr('dy', '0.35em') // Vertically center
         .text(d => `${d.name}: ${d.value}`);
 
@@ -327,7 +339,6 @@ _renderChart(data) {
     bars.exit().remove();
     labels.exit().remove();
 }
-
 
 
 
