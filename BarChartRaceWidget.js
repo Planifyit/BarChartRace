@@ -308,6 +308,11 @@ _renderChart(data) {
         .range([0, this._props.width - 100]);
     console.log("xScale domain set to:", xScale.domain()); // Log the domain of xScale
 
+     // Debugging xScale output for the first data point (if exists)
+    if(data.length > 0) {
+        console.log("Sample xScale output for first data point:", xScale(data[0].value));
+    }
+
     // Ensure the yScale is set with the correct domain of unique names
     const yScale = d3.scaleBand()
         .domain(this._uniqueNames)
@@ -315,6 +320,11 @@ _renderChart(data) {
         .padding(0.1);
     console.log("yScale domain set to:", yScale.domain()); // Log the domain of yScale
 
+  // Debugging yScale output for the first data point (if exists)
+    if(data.length > 0) {
+        console.log("Sample yScale output for first data point:", yScale(data[0].name));
+    }
+    
     // Debugging: Check if any unique names are causing issues
     this._uniqueNames.forEach(name => {
         const yPos = yScale(name);
