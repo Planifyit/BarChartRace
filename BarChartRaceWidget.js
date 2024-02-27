@@ -153,6 +153,8 @@ onCustomWidgetResume() {
     }
 
 async _updateData(dataBinding) {
+     console.log("Received dataBinding:", JSON.stringify(dataBinding, null, 2));
+ 
     console.log("Data Binding Received:", dataBinding);
     if (!this._ready) {
         console.log("D3 not ready, storing data for later");
