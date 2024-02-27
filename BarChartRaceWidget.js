@@ -342,6 +342,7 @@ _renderChart(data) {
 
 
 
+
    _parseMetadata(metadata) {
         console.log("Metadata Received:", metadata);
 
