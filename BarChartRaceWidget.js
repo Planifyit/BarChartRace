@@ -304,20 +304,21 @@ _renderChart(data) {
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.value)])
         .range([0, this._props.width - 100]);
+    console.log("xScale domain set to:", xScale.domain()); // Log the domain of xScale
 
     // Ensure the yScale is set with the correct domain of unique names
     const yScale = d3.scaleBand()
         .domain(this._uniqueNames)
         .range([0, this._props.height])
         .padding(0.1);
-
-    console.log("Unique Names for Y Scale:", this._uniqueNames);
+    console.log("yScale domain set to:", yScale.domain()); // Log the domain of yScale
 
     // Debugging: Check if any unique names are causing issues
     this._uniqueNames.forEach(name => {
         const yPos = yScale(name);
+        console.log(`yScale output for "${name}":`, yPos); // Log the output of yScale for each unique name
         if (yPos === undefined) {
-            console.error(`Issue with yScale for name: ${name}. This name may not exist in your data or is not correctly mapped.`);
+            console.error(`Issue with yScale for name: "${name}". This name may not exist in your data or is not correctly mapped.`);
         }
     });
 
@@ -330,13 +331,13 @@ _renderChart(data) {
         .attr('x', 0)
         .attr('y', d => {
             const yPos = yScale(d.name);
-            console.log(`yScale for ${d.name}:`, yPos);
+            console.log(`yScale for "${d.name}":`, yPos); // Log the yScale output for each data point
             return yPos !== undefined ? yPos : 0; // Fallback to 0 if yPos is undefined
         })
         .attr('height', yScale.bandwidth())
         .attr('width', d => {
             const width = xScale(d.value);
-            console.log(`xScale for ${d.value}:`, width);
+            console.log(`xScale for value ${d.value}:`, width); // Log the xScale output for each data point
             return width !== undefined ? width : 0; // Fallback to 0 if width is undefined
         });
 
@@ -348,12 +349,12 @@ _renderChart(data) {
         .attr('class', 'label')
         .attr('x', d => {
             const xPosition = xScale(d.value) + 5; // A little space from bar end
-            console.log(`Label xPosition for ${d.value}:`, xPosition);
+            console.log(`Label xPosition for value ${d.value}:`, xPosition); // Log the xPosition for each label
             return xPosition !== undefined ? xPosition : 0; // Fallback to 0 if xPosition is undefined
         })
         .attr('y', d => {
             const yPos = yScale(d.name) + yScale.bandwidth() / 2;
-            console.log(`Label yPos for ${d.name}:`, yPos);
+            console.log(`Label yPos for "${d.name}":`, yPos); // Log the yPos for each label
             return yPos !== undefined ? yPos : 0; // Fallback to 0 if yPos is undefined
         })
         .attr('dy', '0.35em') // Vertically center
@@ -363,7 +364,6 @@ _renderChart(data) {
     bars.exit().remove();
     labels.exit().remove();
 }
-
 
 
 
