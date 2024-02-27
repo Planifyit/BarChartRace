@@ -285,7 +285,6 @@ connectedCallback() {
 
        
 
-
 _renderChart(data) {
     console.log("Rendering Chart with Data:", JSON.stringify(data, null, 2));
 
@@ -314,7 +313,7 @@ _renderChart(data) {
     this._uniqueNames.forEach(name => {
         const yPos = yScale(name);
         if (yPos === undefined) {
-            console.error(`Issue with yScale for name: ${name}`);
+            console.error(`Issue with yScale for name: ${name}. This name may not exist in your data or is not correctly mapped.`);
         }
     });
 
@@ -334,7 +333,7 @@ _renderChart(data) {
         .attr('width', d => {
             const width = xScale(d.value);
             console.log(`xScale for ${d.value}:`, width);
-            return width;
+            return width !== undefined ? width : 0; // Fallback to 0 if width is undefined
         });
 
     // Data join for labels
@@ -343,11 +342,15 @@ _renderChart(data) {
 
     labels.enter().append('text')
         .attr('class', 'label')
-        .attr('x', d => xScale(d.value) + 5) // A little space from bar end
+        .attr('x', d => {
+            const xPosition = xScale(d.value) + 5; // A little space from bar end
+            console.log(`Label xPosition for ${d.value}:`, xPosition);
+            return xPosition !== undefined ? xPosition : 0; // Fallback to 0 if xPosition is undefined
+        })
         .attr('y', d => {
             const yPos = yScale(d.name) + yScale.bandwidth() / 2;
             console.log(`Label yPos for ${d.name}:`, yPos);
-            return yPos;
+            return yPos !== undefined ? yPos : 0; // Fallback to 0 if yPos is undefined
         })
         .attr('dy', '0.35em') // Vertically center
         .text(d => `${d.name}: ${d.value}`);
