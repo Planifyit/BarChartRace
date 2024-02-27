@@ -200,13 +200,12 @@ async _updateData(dataBinding) {
 
 
     
-  transformDataForBarChartRace(data) {
+transformDataForBarChartRace(data) {
     if (!data) {
         console.error("No data provided to transformDataForBarChartRace");
         return [];
     }
 
- 
     console.log("Original Data:", data);
 
     // Example transformation logic
@@ -220,17 +219,29 @@ async _updateData(dataBinding) {
     // Group by 'name' to ensure we have unique categories for the Y scale domain
     let groupedData = d3.group(transformedData, d => d.name);
     let uniqueNames = Array.from(groupedData.keys());
-      
+
+    // Debugging: Check if any name is undefined or not expected
+    uniqueNames.forEach(name => {
+        if (name === undefined || name === null || name.trim() === "") {
+            console.error("Undefined, null, or empty name found in unique names:", uniqueNames);
+        }
+    });
+
+    if (uniqueNames.includes(undefined)) {
+        console.error("Undefined found in unique names:", uniqueNames);
+    }
+
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
     this._uniqueNames = uniqueNames; // Make sure this line exists and is executed 
-      
+
     console.log("Transformed Data for Bar Chart Race:", transformedData);
     console.log("Unique Names for Y Scale Domain:", uniqueNames);
-        console.log("Unique Names for Y Scale Domain:", groupedData);
-          console.log("Grouped Data:", groupedData);
+    console.log("Unique Names for Y Scale Domain:", groupedData);
+    console.log("Grouped Data:", groupedData);
     console.log("Unique Names:", uniqueNames);
     return transformedData; // Adjust as needed based on your chart logic
 }
+
 
      _handleGroupClick(d) {
             const { dimensions } = this._parseMetadata(this._props.metadata);
